@@ -179,7 +179,7 @@ def save_manifest(file_path, filename, recording_base_url):
     for r in rows:
         agent_name = (r.get("agent_name") or "Unassigned").strip()
         agent_id = get_or_create_agent(conn, agent_name)
-        print
+        # print
         recording_base = extract_recording_base(r.get("recording_raw"), r.get("recording_hyperlink"))
         print("****"*12)
         recording_base=r.get("recording_raw")
@@ -240,8 +240,7 @@ def call_slm(conversation_text, utterances):
         json={"transcript": conversation_text},
         timeout=config.REQUEST_TIMEOUT_SECONDS,
     )
-    resp.raise_for_status()
-    
+    resp.raise_for_status()    
     return resp.json()
 
 
@@ -249,7 +248,9 @@ def normalize_score(param_key, raw_score):
     max_points = config.PARAMETER_MAX_POINTS.get(param_key, config.DEFAULT_PARAMETER_MAX_POINTS)
     if max_points <= 0:
         return 0
-    return round(min(raw_score, max_points) / max_points * 100, 1)
+    # return round(min(raw_score, max_points) / max_points * 100, 1)
+    return raw_score
+
 
 
 def quality_from_score(score, fatal_error):
@@ -267,10 +268,10 @@ def sentiment_from_verdict(verdict, fatal_error):
         return "negative"
     v = (verdict or "").lower()
     if v in ("good", "excellent"):
-        return "positive"
-    if v in ("poor", "bad", "fail"):
-        return "negative"
-    return "neutral"
+        return "positive" 
+    if v in ("poor", "bad", "fail"): 
+        return "negative" 
+    return "neutral" 
 
 
 def process_call(conn, call_row):
@@ -331,7 +332,9 @@ def process_call(conn, call_row):
             continue
         raw_score = entry.get("score", 0) or 0
         norm_score = normalize_score(key, raw_score)
-        scores.append(norm_score)
+        # scores.append(norm_score)
+        scores.append(raw_score)
+
         conn.execute(
             """INSERT INTO call_scores
                (call_id, parameter_id, status, reason, evidence, start_time, end_time, raw_score, score)
@@ -354,7 +357,9 @@ def process_call(conn, call_row):
             ),
         )
 
-    overall_score = round(sum(scores) / len(scores), 1) if scores else (total or 0)
+    # overall_score = round(sum(scores) / len(scores), 1) if scores else (total or 0)
+    overall_score = sum(scores) if scores else (total or 0)# just sum up the scores 
+
     overall_quality = quality_from_score(overall_score, fatal_error)
     sentiment = sentiment_from_verdict(verdict, fatal_error)
 
