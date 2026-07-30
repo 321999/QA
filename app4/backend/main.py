@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 import hashlib
 
-from config import RECORDINGS_BASE_URL
+from config import RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL
 from db import get_conn, init_db
 from pipeline import process_manifest, save_manifest
 
@@ -544,9 +544,16 @@ def call_detail(call_id: int, db = Depends(get_db)):
         (call_id,),
     ).fetchall()
     fatal = db.execute("SELECT * FROM fatal_checks WHERE call_id = ?", (call_id,)).fetchall()
-    print(dict(call), [dict(r) for r in scores], [dict(r) for r in fatal])
+    # print(dict(call), [dict(r) for r in scores], [dict(r) for r in fatal])
+    call_dict = dict(call)
+    print(call_dict)
+    if call_dict.get("recording_base"):
+        call_dict["mono_url"] = f"{RECORDINGS_PLAYBACK_BASE_URL.rstrip('/')}/{call_dict['recording_base']}"
+    else:
+        call_dict["mono_url"] = None
+    print(f" after adding the mono url\n{call_dict}")
     return {
-        "call": dict(call),
+        "call": dict(call_dict),
         "parameters": [dict(r) for r in scores],
         "fatal_checks": [dict(r) for r in fatal],
     }

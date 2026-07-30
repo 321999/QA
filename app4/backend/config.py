@@ -10,7 +10,10 @@ MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "qa_dashboard3")
 # Speech-to-text service: takes rx_path (IN leg) + tx_path (OUT leg) recording URLs,
 # returns a diarized transcript (utterances + full conversation text).
 STT_API_URL = os.environ.get("STT_API_URL", "http://192.168.11.253:9000/transcribe")
-
+RECORDINGS_PLAYBACK_BASE_URL = os.environ.get(
+    "RECORDINGS_PLAYBACK_BASE_URL", "http://192.168.11.253:9000/recordings"
+)
+# http://192.168.11.253:9000/recordings/7002_06397853103_17-Jun-26-19-02-49.wav16
 # SLM QA analysis service: takes the transcript/conversation, returns the 16-point
 # checklist scoring + fatal checks + summary + verdict.
 SLM_API_URL = os.environ.get("SLM_API_URL", "http://192.168.11.253:8000/qa")

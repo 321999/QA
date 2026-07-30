@@ -331,7 +331,7 @@ def process_call(conn, call_row):
         if not entry:
             continue
         raw_score = entry.get("score", 0) or 0
-        norm_score = normalize_score(key, raw_score)
+        norm_score = normalize_score(key, raw_score)# keeping the score as it is so the ouput looks good 
         # scores.append(norm_score)
         scores.append(raw_score)
 
