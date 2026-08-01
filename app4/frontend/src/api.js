@@ -12,6 +12,8 @@ async function request(path, options = {}) {
   return res.json();
 }
 
+
+
 export const api = {
   login: (username, password) =>
     request("/api/login", { method: "POST", body: JSON.stringify({ username, password }) }),
@@ -52,4 +54,11 @@ export const api = {
   reprocessManifest: (id) => request(`/api/manifest/${id}/process`, { method: "POST" }),
   callDetail: (id) => request(`/api/calls/${id}`),
   callTranscript: (id) => request(`/api/calls/${id}/transcript`),
+
+  // change the password 
+  changePassword: (username, currentPassword, newPassword) =>
+  request("/api/change-password", {
+    method: "POST",
+    body: JSON.stringify({ username, current_password: currentPassword, new_password: newPassword }),
+  }),
 };

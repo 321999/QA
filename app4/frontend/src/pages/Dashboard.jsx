@@ -149,16 +149,16 @@ import DateRangePicker from "../components/DateRangePicker";
 import FunnelChart from "../components/FunnelChart";
 import TopAgentsBox from "../components/TopAgentsBox";
 
-function fmt(d) {
-  return d.toISOString().slice(0, 10);
-}
+// function fmt(d) {
+//   return d.toISOString().slice(0, 10);
+// }
 
-function defaultRange() {
-  const e = new Date();
-  const s = new Date();
-  s.setDate(s.getDate() - 30);
-  return { start: fmt(s), end: fmt(e) };
-}
+// function defaultRange() {
+//   const e = new Date();
+//   const s = new Date();
+//   s.setDate(s.getDate() - 30);
+//   return { start: fmt(s), end: fmt(e) };
+// }
 
 // Feature 2: the 5 top stat cards are all clickable. Each maps to a
 // `category` key the backend's /api/dashboard/category/{category}/... routes
@@ -171,8 +171,8 @@ const CARD_DEFS = [
   { key: "negative", label: "Negative calls", field: "negative_calls", accent: "coral" },
 ];
 
-export default function Dashboard({ onSelectParameter, onSelectCategory, onSelectAgent }) {
-  const [{ start, end }, setRange] = useState(defaultRange());
+export default function Dashboard({ start,end,onSelectParameter, onSelectCategory, onSelectAgent }) {
+  // const [{ start, end }, setRange] = useState(defaultRange());
   const [summary, setSummary] = useState(null);
   const [funnel, setFunnel] = useState([]);
   const [totalAudited, setTotalAudited] = useState(0);
@@ -215,7 +215,7 @@ export default function Dashboard({ onSelectParameter, onSelectCategory, onSelec
       {/* <h1 className="page-title">Audit overview</h1>
       <p className="page-sub">Call quality performance across the floor, {start} to {end}.</p> */}
 
-      <DateRangePicker start={start} end={end} onChange={(s, e) => setRange({ start: s, end: e })} />
+      {/* <DateRangePicker start={start} end={end} onChange={(s, e) => setRange({ start: s, end: e })} /> */}
 
       {error && <div className="login-error">{error}</div>}
 

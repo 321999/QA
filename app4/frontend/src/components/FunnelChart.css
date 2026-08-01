@@ -53,7 +53,7 @@
 .funnel-track {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   padding: 20px 0;
 }
 
@@ -63,14 +63,14 @@
   align-items: center;
   position: relative;
   cursor: pointer;
-  width: 56px;
+  width: 45px;
 }
 
-.funnel-label {
+/* .funnel-label {
   font-size: 11px;
   color: #475569;
   text-align: center;
-  height: 36px;
+  height: 5px;
   line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -78,10 +78,10 @@
   overflow: hidden;
   font-weight: 500;
 }
-
+*/
 .funnel-label.hidden {
   visibility: hidden;
-}
+} 
 
 .funnel-segment-wrap {
   display: flex;

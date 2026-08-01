@@ -22,7 +22,7 @@
 
 html, body, #root {
   margin: 0;
-  min-height: 100vh;
+  height: 100%;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
@@ -39,6 +39,7 @@ a { color: inherit; }
 }
 
 .mono { font-family: var(--font-mono); }
+
 
 /* ---------------- Login ---------------- */
 .login-shell {
@@ -213,27 +214,120 @@ a { color: inherit; }
 }
 
 /* ---------------- App shell ---------------- */
-.app-shell { min-height: 100vh;}
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 32px;
+  gap: 20px;
+  padding: 1px 20px;
   background: var(--ink);
   color: var(--paper);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 .topbar .brand {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 .topbar .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
 
-.topbar-right { display: flex; align-items: center; gap: 18px; font-size: 14px; }
+/* date filter tabs + range, living directly in the navbar */
+.topbar-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.topbar-tabs .quick-ranges { display: flex; gap: 6px; }
+.topbar-tabs .quick-ranges button {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: var(--paper);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.topbar-tabs .quick-ranges button.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+}
+.topbar-tabs .date-range {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.16);
+  padding: 5px 10px;
+}
+.topbar-tabs .date-range input[type="date"] {
+  color: var(--paper);
+  color-scheme: dark;
+}
+.topbar-tabs .date-range .sep { color: #9fb3d1; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; font-size: 14px; flex-shrink: 0; }
+.topbar-center { display: flex; align-items: center; gap: 12px; font-size: 14px; flex-shrink: 0; }
+
+/* single "Menu" button + dropdown, replaces the old row of separate buttons */
+.menu-wrap { position: relative; }
+.menu-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: var(--paper);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.menu-btn:hover { border-color: var(--paper); }
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  color: var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(20, 33, 61, 0.28);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 50;
+  border: 1px solid var(--line);
+}
+.menu-dropdown .menu-user {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--gray);
+  border-bottom: 1px solid var(--paper-dim);
+}
+.menu-dropdown button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.menu-dropdown button:hover { background: var(--paper-dim); }
+.menu-dropdown button.danger { color: var(--coral); }
+.menu-dropdown button.active { color: var(--teal); font-weight: 600; }
+
 .logout-btn {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.25);
@@ -244,7 +338,19 @@ a { color: inherit; }
 }
 .logout-btn:hover { border-color: var(--paper); }
 
-.content { max-width: 1180px; margin: 0 auto; padding: 32px; }
+/* Content fills whatever height is left under the navbar. Individual pages
+   (manifest list, call detail, transcripts) can still scroll internally via
+   this container - only the Dashboard is built to fit exactly with zero
+   scroll (see .dashboard-viewport below). */
+.content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 24px 20px;
+}
 
 .breadcrumb {
   font-family: var(--font-mono);
@@ -274,7 +380,7 @@ a { color: inherit; }
   background: white;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 2px 12px;
 }
 .date-range input[type="date"] {
   border: none;
@@ -288,7 +394,7 @@ a { color: inherit; }
   background: var(--teal);
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 1px 12px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -299,13 +405,13 @@ a { color: inherit; }
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  /* margin-bottom: 28px; */
 }
 .quick-ranges { display: flex; gap: 8px; }
 .quick-ranges button {
   background: white;
   border: 1px solid var(--line);
-  padding: 7px 12px;
+  padding: 2px 12px;
   border-radius: 6px;
   font-size: 12px;
   color: var(--ink-soft);
@@ -508,7 +614,7 @@ a { color: inherit; }
   align-items: center;
   width: 100%;
   height: 100%;
-  gap: 3px;
+  gap: 1px;
 }
 
 .funnel-v2-col {
@@ -539,7 +645,7 @@ a { color: inherit; }
 }
 
 .funnel-v2-chevron-wrap {
-  width: 100%;
+  width: 80%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -634,11 +740,13 @@ a { color: inherit; }
 
 /* ---------------- No-scroll dashboard viewport ---------------- */
 /* The dashboard page fits entirely within the viewport - no page-level
-   scrolling. Only the leaderboard list scrolls internally if it ever
-   overflows its box (it won't at 10 rows on a normal screen). */
+   scrolling. It simply fills whatever height .content has left under the
+   navbar (both are flex/height-driven now, so no fragile fixed-px subtraction
+   is needed). Only the leaderboard list scrolls internally if it ever
+   overflows its box. */
 .dashboard-viewport {
-  height: calc(100vh - 58px - 64px); /* 100vh - topbar - .content vertical padding */
-  min-height: 460px;
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -646,13 +754,21 @@ a { color: inherit; }
 .dashboard-viewport .page-title { font-size: 22px; margin-bottom: 2px; }
 .dashboard-viewport .page-sub { font-size: 13px; margin-bottom: 14px; }
 .dashboard-viewport .range-row { margin-bottom: 14px; flex-shrink: 0; }
-.dashboard-viewport .stat-grid { margin-bottom: 16px; flex-shrink: 0; }
-.dashboard-viewport .stat-card { padding: 12px 14px; }
-.dashboard-viewport .stat-card .value { font-size: 22px; }
-.dashboard-viewport .section-head { margin-bottom: 8px; flex-shrink: 0; }
+.dashboard-viewport .stat-grid { margin-bottom: 14px; flex-shrink: 0; }
+.dashboard-viewport .stat-card { padding: 10px 14px; }
+.dashboard-viewport .stat-card .value { font-size: 20px; }
+.dashboard-viewport .stat-card .label { font-size: 11px; margin-bottom: 6px; }
+.dashboard-viewport .section-head { margin-bottom: 6px; flex-shrink: 0; }
+.dashboard-viewport .section-head h2 { font-size: 16px; }
+
+/* .content normally scrolls (other pages need that); when it's showing the
+   dashboard specifically, it must not, so the viewport's own sizing is the
+   only thing in control. */
+.content:has(.dashboard-viewport) { overflow: hidden; padding-bottom: 12px; }
 
 @media (max-width: 900px) {
   .dashboard-viewport { height: auto; min-height: 0; overflow: visible; }
+  .content:has(.dashboard-viewport) { overflow-y: auto; }
 }
 
 /* ---------------- Feature 3: top agents leaderboard box ---------------- */
@@ -765,4 +881,46 @@ a { color: inherit; }
 .param-row-detailed.is-playing .listen-btn {
   background: var(--teal);
   color: white;
+}
+
+/* appendign the new css  */
+.menu-wrap { position: relative; }
+.menu-btn {
+  background: transparent; 
+  border: 0px solid rgba(255,255,255,0.25);
+  color: var(--paper);
+  padding: 2px 16px; border-radius: 6px; font-size: 13px;
+}
+.menu-btn:hover { border-color: var(--paper); }
+.menu-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0; background: white; color: var(--ink);
+  border-radius: 10px; box-shadow: 0 12px 32px rgba(20,33,61,0.28); min-width: 200px;
+  overflow: hidden; z-index: 50; border: 1px solid var(--line);
+}
+.menu-dropdown .menu-user { padding: 12px 16px; font-size: 12px; color: var(--gray); border-bottom: 1px solid var(--paper-dim); }
+.menu-dropdown button { width: 100%; text-align: left; background: none; border: none; padding: 11px 16px; font-size: 13px; color: var(--ink); }
+.menu-dropdown button:hover { background: var(--paper-dim); }
+.menu-dropdown button.danger { color: var(--coral); }
+.menu-dropdown button.active { color: var(--teal); font-weight: 600; }
+
+.topbar-center .quick-ranges button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); color: var(--paper); }
+.topbar-center .quick-ranges button.active { background: var(--teal); border-color: var(--teal); color: white; }
+.topbar-center .date-range { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); }
+.topbar-center .date-range input[type="date"] { color: var(--paper); color-scheme: dark; }
+.topbar-center .date-range .sep { color: #9fb3d1; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(20,33,61,0.5); display: flex;
+  align-items: center; justify-content: center; z-index: 100;
+}
+.modal-card { background: white; border-radius: 12px; padding: 24px; width: 100%; max-width: 380px; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.modal-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; }
+.modal-close { background: none; border: none; font-size: 22px; color: var(--gray); line-height: 1; }
+
+/* for the top right cointent should come in the sinle line */
+.tr{
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }

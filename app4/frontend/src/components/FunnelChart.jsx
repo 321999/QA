@@ -76,9 +76,9 @@ export default function FunnelChart({ data, totalAudited, onSelectParameter }) {
                 onClick={() => onSelectParameter && onSelectParameter(row.parameter)}
               >
                 {/* Text Above */}
-                <div className={`funnel-label label-above ${labelAbove ? "visible" : "hidden"}`}>
+                {/* <div className={`funnel-label label-above ${labelAbove ? "visible" : "hidden"}`}>
                   {row.parameter}
-                </div>
+                </div> */}
 
                 {/* 3D Segment */}
                 <div className="funnel-segment-wrap" style={{ height: `${BASE_HEIGHT}px` }}>
@@ -124,9 +124,9 @@ export default function FunnelChart({ data, totalAudited, onSelectParameter }) {
                 </div>
 
                 {/* Text Below */}
-                <div className={`funnel-label label-below ${!labelAbove ? "visible" : "hidden"}`}>
+                {/* <div className={`funnel-label label-below ${!labelAbove ? "visible" : "hidden"}`}>
                   {row.parameter}
-                </div>
+                </div> */}
 
                 {/* Tooltip */}
                 {hoverIdx === i && (

@@ -565,3 +565,24 @@ def health(db = Depends(get_db)):
     not just whether the FastAPI process is up."""
     db.execute("SELECT 1")
     return {"status": "ok"}
+
+
+# to change the password as well 
+class ChangePasswordRequest(BaseModel):
+    username: str
+    current_password: str
+    new_password: str
+
+@app.post("/api/change-password")
+def change_password(req: ChangePasswordRequest, db = Depends(get_db)):
+    row = db.execute(
+        "SELECT * FROM users WHERE username = ? AND password_hash = ?",
+        (req.username, hash_pw(req.current_password)),
+    ).fetchone()
+    if not row:
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    if len(req.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    db.execute("UPDATE users SET password_hash = ? WHERE username = ?", (hash_pw(req.new_password), req.username))
+    db.commit()
+    return {"status": "ok"}
