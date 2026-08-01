@@ -32,7 +32,9 @@
   justify-content: center;
   gap: 16px;
   width: 100%;
-  overflow-x: auto;
+  /* overflow-x: auto;
+   */
+   overflow: hidden;
 }
 
 .axis-label {
@@ -79,9 +81,9 @@
   font-weight: 500;
 }
 */
-.funnel-label.hidden {
+/* .funnel-label.hidden {
   visibility: hidden;
-} 
+}  */
 
 .funnel-segment-wrap {
   display: flex;
