@@ -153,8 +153,8 @@ export default function CallDetail({ callId, onBack }) {
 
   const LEG_OPTIONS = [
     { key: "mono", label: "Full call (mono)", available: Boolean(monoSrc) },
-    { key: "agent", label: "Agent leg (OUT)", available: Boolean(agentSrc) },
-    { key: "customer", label: "Customer leg (IN)", available: Boolean(customerSrc) },
+    // { key: "agent", label: "Agent leg (OUT)", available: Boolean(agentSrc) },
+    // { key: "customer", label: "Customer leg (IN)", available: Boolean(customerSrc) },
   ];
 
   return (
@@ -207,7 +207,7 @@ export default function CallDetail({ callId, onBack }) {
       <div className="summary-card" style={{ marginBottom: 32 }}>
         <h3>Call recording</h3>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {/* <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
           {LEG_OPTIONS.map((opt) => (
             <button
               key={opt.key}
@@ -227,7 +227,7 @@ export default function CallDetail({ callId, onBack }) {
               {opt.label}{!opt.available && " · unavailable"}
             </button>
           ))}
-        </div>
+        </div> */}
 
         {error && <div className="login-error">{error}</div>}
 
@@ -265,46 +265,71 @@ export default function CallDetail({ callId, onBack }) {
       </div>
 
       <div className="section-head"><h2>Parameter-wise breakdown</h2></div>
-      {console.log(parameters)}
-      <div className="param-list">
-        {parameters.map((p, i) => (
-          <div 
-            className={`param-row-detailed ${nowPlaying?.parameter === p.parameter ? "is-playing" : ""}`}
-            key={p.parameter}
-          >
-            <div className="param-row-main">
-              <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-              <span className="name">{p.parameter}</span>
-              <span className="bar-track">
-                <span className="bar-fill" style={{ width: `${p.score}%`, background: barColor(p.score) }} />
-              </span>
-              <span className="score mono">{p.score}</span>
-              {hasAnyAudio && p.start_time !== null && p.start_time !== undefined && (
-                <button 
-                  type="button" 
-                  className="listen-btn" 
-                  onClick={() => playEvidence(p.parameter, p.start_time, p.end_time)} 
-                  title={`Play ${fmtTime(p.start_time)} - ${fmtTime(p.end_time)}`} 
-                > 
-                  {nowPlaying?.parameter === p.parameter ? "▶ Playing" : "▶ Listen" }
-                </button> 
-              )} 
-            </div> 
-            {(p.reason || p.evidence) && (
-              <div style={{ fontSize: 12, color: "var(--gray)", padding: "0 0 8px 44px" }}>
-                {p.reason}
-                {p.evidence && (
-                  <span style={{ color: "var(--ink-soft)" }}>
-                    {" "}— "{p.evidence}"
-                    {p.start_time !== null && p.start_time !== undefined && (
-                      <span className="mono" style={{ color: "var(--gray)" }}> · {fmtTime(p.start_time)}</span>
-                    )}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="score-table-wrap">
+        <table className="score-table">
+          <colgroup>
+            <col className="col-idx" />
+            <col className="col-param" />
+            <col className="col-score" />
+            <col className="col-action" />
+          </colgroup>
+          <thead>
+            {/* <tr>
+              <th scope="col">#</th>
+              <th scope="col">Parameter</th>
+              <th scope="col">Score</th>
+              <th scope="col">Evidence</th>
+            </tr> */}
+          </thead>
+          <tbody>
+            {parameters.map((p, i) => (
+              <tr
+                key={p.parameter}
+                className={nowPlaying?.parameter === p.parameter ? "is-playing" : ""}
+              >
+                <td className="mono idx-cell">{String(i + 1).padStart(2, "0")}</td>
+                <td>
+                  <div className="param-name">{p.parameter}</div>
+                  {(p.reason || p.evidence) && (
+                    <div className="param-evidence">
+                      {p.reason}
+                      {p.evidence && (
+                        <span className="evidence-quote">
+                          {" "}— "{p.evidence}"
+                          {p.start_time !== null && p.start_time !== undefined && (
+                            <span className="mono" style={{ color: "var(--gray)" }}> · {fmtTime(p.start_time)}</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </td>
+                <td>
+                  <div className="score-cell">
+                    <span className="bar-track">
+                      <span className="bar-fill" style={{ width: `${p.score}%`, background: barColor(p.score) }} />
+                    </span>
+                    <span className="score mono">{p.score}</span>
+                  </div>
+                </td>
+                <td>
+                  {hasAnyAudio && p.start_time !== null && p.start_time !== undefined ? (
+                    <button
+                      type="button"
+                      className="listen-btn"
+                      onClick={() => playEvidence(p.parameter, p.start_time, p.end_time)}
+                      title={`Play ${fmtTime(p.start_time)} - ${fmtTime(p.end_time)}`}
+                    >
+                      {nowPlaying?.parameter === p.parameter ? "▶ Playing" : "▶ Listen"}
+                    </button>
+                  ) : (
+                    <span className="mono no-evidence">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
 

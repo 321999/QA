@@ -182,3 +182,9 @@ scorecard (the existing `AgentDetail` page).
 dashboard from the manifest pipeline above. The schema (`agents`, `calls`,
 `parameters`, `call_scores`, `fatal_checks`, `transcripts`, `manifests`)
 covers both paths.
+
+#### where is my loc 
+```
+dir /s /b Scripts
+```
+<p>command to know where is my Scripts folder<span>this i have used to locate my vevn</span></p>

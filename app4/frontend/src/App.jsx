@@ -10,10 +10,22 @@ import AgentCalls from "./pages/AgentCalls";
 import DateRangePicker from "./components/DateRangePicker";
 import ChangePasswordModal from "./components/ChangePasswordModel";
 import MenuButton from "./components/MenuButton";
-
+// import ToKnowlocation from "./components/ToKnowlocation";
 // Single "Menu" button, top-right, opens a dropdown with everything that used
 // to be separate buttons (Dashboard / Upload manifest / Sign out) plus the
 // new Change password option. Closes on outside click.
+
+
+import { useLocation } from "react-router-dom";
+
+function MyComponent() {
+  const location = useLocation();
+
+  console.log("Current Route:", location.pathname);
+
+  return <div>{location.pathname}</div>;
+}
+
 function NavMenu({ username, currentView, onDashboard, onUpload, onChangePassword, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -113,6 +125,7 @@ export default function App() {
     s.setDate(s.getDate() - 30);
     return { start: fmt(s), end: fmt(e) };
   }
+  
   return (
     <div className="app-shell">
       <div className="topbar">
@@ -137,6 +150,9 @@ export default function App() {
         </div>
       </div>
       {/* <h5>call detail </h5> */}
+      <h5>to know location</h5>
+      
+      {/* <ToKnowlocation /> */}
       <div className="content">
         {view.name === "dashboard" && (
           <Dashboard

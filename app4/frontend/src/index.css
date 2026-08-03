@@ -513,6 +513,50 @@ a { color: inherit; }
   text-align: right;
 }
 
+/* Parameter breakdown — real table */
+.score-table-wrap {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.score-table col.col-idx { width: 48px; }
+.score-table col.col-param { width: auto; }
+.score-table col.col-score { width: 160px; }
+.score-table col.col-action { width: 110px; }
+.score-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray);
+  background: var(--paper-dim);
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.score-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--paper-dim);
+  vertical-align: top;
+}
+.score-table tbody tr:last-child td { border-bottom: none; }
+.score-table tbody tr:hover { background: var(--paper-dim); }
+.score-table tbody tr.is-playing { background: var(--teal-soft); }
+.score-table tbody tr.is-playing .listen-btn { background: var(--teal); color: white; }
+.score-table .idx-cell { font-size: 12px; color: var(--gray); padding-top: 15px; }
+.score-table .param-name { font-size: 14px; color: var(--ink); font-weight: 500; }
+.score-table .score-cell { display: flex; align-items: center; gap: 10px; padding-top: 3px; }
+.score-table .score-cell .bar-track { flex: 1; height: 8px; }
+.score-table .score-cell .score { min-width: 24px; text-align: right; }
+.score-table .no-evidence { color: var(--gray); font-size: 12px; }
+
 /* Agent list */
 .agent-table {
   background: white;
@@ -843,12 +887,27 @@ a { color: inherit; }
   border-bottom: 1px solid var(--paper-dim);
 }
 .param-list > .param-row-detailed:last-child { border-bottom: none; }
-.param-row-main {
+.param-row-main{
+    display:grid;
+
+    grid-template-columns:
+        45px     /* number */
+        240px    /* parameter */
+        1fr      /* evidence */
+        60px     /* score */
+        90px;    /* button */
+
+    gap:16px;
+
+    align-items:start;
+}
+/* .param-row-main {
   display: grid;
   grid-template-columns: 32px 1fr 180px 48px auto;
   align-items: center;
   gap: 16px;
-}
+} */
+
 .param-row-evidence {
   margin-top: 6px;
   margin-left: 48px;
@@ -857,6 +916,15 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+ .param-evidence{
+    font-size:13px;
+    color:var(--gray);
+
+    overflow-wrap:anywhere;
+    word-break:break-word;
+
+    line-height:1.5;
 }
 .evidence-quote { color: var(--ink-soft); font-style: italic; }
 
