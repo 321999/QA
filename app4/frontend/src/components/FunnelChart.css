@@ -34,7 +34,7 @@
   width: 100%;
   /* overflow-x: auto;
    */
-   overflow: hidden;
+   overflow: visible;
 }
 
 .axis-label {
