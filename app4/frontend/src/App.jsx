@@ -150,7 +150,7 @@ export default function App() {
         </div>
       </div>
       {/* <h5>call detail </h5> */}
-      <h5>to know location</h5>
+      {/* <h5>to know location</h5> */}
       
       {/* <ToKnowlocation /> */}
       <div className="content">

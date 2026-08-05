@@ -234,6 +234,8 @@ def dashboard_dispositions(
         """,
         (start, end),
     ).fetchall()
+
+    print(rows)
     counts = {r["disp"]: r["n"] for r in rows}
 
     return {

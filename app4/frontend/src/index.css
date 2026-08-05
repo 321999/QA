@@ -782,6 +782,52 @@ a { color: inherit; }
   box-shadow: 0 6px 16px rgba(20, 33, 61, 0.08);
 }
 
+/*   for the disposition wise */
+.disposition-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.disposition-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 16px;
+  flex: 1 1 160px;
+  min-width: 140px;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.disposition-pill:hover {
+  border-color: var(--teal);
+  transform: translateY(-1px);
+}
+.disposition-pill.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.disposition-pill.disabled:hover {
+  border-color: var(--line);
+  transform: none;
+}
+.disposition-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.disposition-label {
+  font-size: 12px;
+  color: var(--gray);
+  text-align: left;
+}
+
+
+
+
+
 /* ---------------- No-scroll dashboard viewport ---------------- */
 /* The dashboard page fits entirely within the viewport - no page-level
    scrolling. It simply fills whatever height .content has left under the
@@ -814,6 +860,10 @@ a { color: inherit; }
   .dashboard-viewport { height: auto; min-height: 0; overflow: visible; }
   .content:has(.dashboard-viewport) { overflow-y: auto; }
 }
+
+
+
+
 
 /* ---------------- Feature 3: top agents leaderboard box ---------------- */
 .leaderboard-box {
