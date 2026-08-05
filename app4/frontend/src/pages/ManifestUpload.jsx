@@ -73,12 +73,12 @@ export default function ManifestUpload({ onOpenCall }) {
 
   return (
     <div>
-      <h1 className="page-title">Upload call manifest</h1>
-      <p className="page-sub">
+      <h1 className="page-title">Upload call details file</h1>
+      {/* <p className="page-sub">
         Upload the Excel manifest exported from the dialer. Each row's IN/OUT recording legs
         are matched, sent to speech-to-text, then scored against the 16-point QA checklist —
         automatically, no manual audit needed.
-      </p>
+      </p> */}
 
       <form onSubmit={handleUpload} className="summary-card" style={{ maxWidth: 560, marginBottom: 32 }}>
         <div className="field">
@@ -92,14 +92,14 @@ export default function ManifestUpload({ onOpenCall }) {
           />
         </div>
         <div className="field">
-          <label htmlFor="recording-base">Recordings base URL (optional override)</label>
-          <input
+          {/* <label htmlFor="recording-base">Recordings base URL (optional override)</label>
+          <input disabled
             id="recording-base"
             type="text"
             placeholder="http://192.168.10.189/qa_upload"
             value={recordingBaseUrl}
             onChange={(e) => setRecordingBaseUrl(e.target.value)}
-          />
+          /> */}
         </div>
         {error && <div className="login-error">{error}</div>}
         <button className="btn-primary" type="submit" disabled={uploading || !file}>
