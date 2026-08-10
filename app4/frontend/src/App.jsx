@@ -26,7 +26,7 @@ function MyComponent() {
   return <div>{location.pathname}</div>;
 }
 
-function NavMenu({ username, currentView, onDashboard, onUpload, onChangePassword, onLogout }) {
+function NavMenu({ username, currentView, onDashboard, onUpload, onReports, onChangePassword, onLogout}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -67,6 +67,15 @@ function NavMenu({ username, currentView, onDashboard, onUpload, onChangePasswor
           >
             Upload file
           </button>
+
+{/* for the report section */}
+           <button
+            type="button"
+            className={currentView === "reports" ? "active" : ""}
+            onClick={() => pick(onReports)}
+          >
+            Reports
+          </button>
           <button type="button" onClick={() => pick(onChangePassword)}>
             Change password
           </button>
@@ -80,6 +89,63 @@ function NavMenu({ username, currentView, onDashboard, onUpload, onChangePasswor
     </div>
   );
 }
+// function NavMenu({ username, currentView, onDashboard, onUpload, onReports, onChangePassword, onLogout }) {
+//   const [open, setOpen] = useState(false);
+//   const ref = useRef(null);
+ 
+//   useEffect(() => {
+//     function onClickOutside(e) {
+//       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+//     }
+//     document.addEventListener("mousedown", onClickOutside);
+//     return () => document.removeEventListener("mousedown", onClickOutside);
+//   }, []);
+ 
+//   function pick(action) {
+//     setOpen(false);
+//     action();
+//   }
+ 
+//   return (
+//     <div className="menu-wrap" ref={ref}>
+//       <button className="menu-btn" type="button" onClick={() => setOpen((v) => !v)}>
+//         Menu ▾
+//       </button>
+//       {open && (
+//         <div className="menu-dropdown">
+//           <div className="menu-user">Signed in as {username}</div>
+//           <button
+//             type="button"
+//             className={currentView === "dashboard" ? "active" : ""}
+//             onClick={() => pick(onDashboard)}
+//           >
+//             Dashboard
+//           </button>
+//           <button
+//             type="button"
+//             className={currentView === "reports" ? "active" : ""}
+//             onClick={() => pick(onReports)}
+//           >
+//             Reports
+//           </button>
+//           <button
+//             type="button"
+//             className={currentView === "manifestUpload" ? "active" : ""}
+//             onClick={() => pick(onUpload)}
+//           >
+//             Upload manifest
+//           </button>
+//           <button type="button" onClick={() => pick(onChangePassword)}>
+//             Change password
+//           </button>
+//           <button type="button" className="danger" onClick={() => pick(onLogout)}>
+//             Sign out
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -209,6 +275,16 @@ export default function App() {
         {view.name === "manifestUpload" && (
           <ManifestUpload onOpenCall={(callId) => goCallDetail(callId, { name: "manifestUpload" })} />
         )}
+
+{/* report page */}
+     {view.name === "reports" && (
+          <Reports
+            start={start}
+            end={end}
+            onSelectCall={(callId) => goCallDetail(callId, { name: "reports" })}
+          />
+        )}
+
 
         {/* feature 2.3: parameter marks + audio evidence for one call */}
         {view.name === "callDetail" && (

@@ -233,10 +233,11 @@ export default function CallDetail({ callId, onBack }) {
 
         {!hasAnyAudio && (
           <div className="state-msg" style={{ padding: "20px 0" }}>
-            No recording URL saved for this call — nothing to play. This means
+            No recording URL match Or recording deleted from the server
+            {/* saved for this call — nothing to play. This means
             the manifest pipeline couldn't build a playable path (recording
             base not matched, or the recordings base URL wasn't set) when
-            this call was audited.
+            this call was audited. */}
           </div>
         )}
 

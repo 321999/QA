@@ -82,7 +82,14 @@ export const api = {
   agentsForParameter: (param, start, end) =>
     request(`/api/dashboard/parameters/${encodeURIComponent(param)}/agents?start=${start}&end=${end}`),
   agentDetail: (id, start, end) => request(`/api/agents/${id}?start=${start}&end=${end}`),
+  agents: () => request(`/api/agents`),
 
+  // report page: agent name / recording / marks per parameter, one row per audited call
+  agentScoresReport: ({ agentId, start, end, page = 1, pageSize = 25, sort = "call_date_desc" }) => {
+    const params = new URLSearchParams({ start, end, page, page_size: pageSize, sort });
+    if (agentId) params.set("agent_id", agentId);
+    return request(`/api/reports/agent-scores?${params.toString()}`);
+  },
   // feature 1: parameter success-rate funnel (sorted highest-first server-side)
   parameterFunnel: (start, end) => request(`/api/dashboard/parameter-funnel?start=${start}&end=${end}`),
 

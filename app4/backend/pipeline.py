@@ -211,7 +211,7 @@ def save_manifest(file_path, filename, recording_base_url):
 
     conn.commit()
     conn.close()
-    return manifest_id, inserted
+    return manifest_id, inserted 
 
 
 def call_stt(rx_path, tx_path):

@@ -188,3 +188,13 @@ covers both paths.
 dir /s /b Scripts
 ```
 <p>command to know where is my Scripts folder<span>this i have used to locate my vevn</span></p>
+
+### to konw the file extension  in priucular filder 
+```
+from pathlib import Path
+folder=Path('folder location')
+>>> for file in folder.glob("*.wav16"):
+...     if file.is_file() and not file.name.endswith(('IN.wav16','OUT.wav16')):
+...         print(file.name)
+
+```

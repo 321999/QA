@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import hashlib
 
 # from app4_.backend.config import RECOR, RECORDINGS_PLAYBACK_BASE_URLDINGS_PLAYBACK_BASE_URL
-from config import RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL
+from config import PARAMETERS, RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL
 from db import get_conn, init_db
 from pipeline import process_manifest, save_manifest
 
@@ -565,6 +565,85 @@ def top_agents(
         "agents": [dict(r) for r in rows],
     }
 
+
+
+REPORT_SORTS = {
+    "call_date_desc": "c.call_date DESC, c.id DESC",
+    "call_date_asc": "c.call_date ASC, c.id ASC",
+    "score_desc": "c.overall_score DESC",
+    "score_asc": "c.overall_score ASC",
+    "agent_name": "a.name ASC, c.call_date DESC",
+}
+
+@app.get("/api/reports/agent-scores")
+def agent_scores_report(
+    agent_id: Optional[int] = None,
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 25,
+    sort: str = "call_date_desc",
+    db = Depends(get_db),
+):
+    start, end = date_range_defaults(start, end)
+    page = max(1, page)
+    page_size = max(1, min(page_size, 200))  # cap it - this is a report table, not a data dump endpoint
+    offset = (page - 1) * page_size
+    order_sql = REPORT_SORTS.get(sort, REPORT_SORTS["call_date_desc"])
+
+    where = [
+        "c.status = 'audited'",
+        "c.call_date IS NOT NULL",
+        "date(c.call_date) BETWEEN date(?) AND date(?)",
+    ]
+    params = [start, end]
+    if agent_id:
+        where.append("c.agent_id = ?")
+        params.append(agent_id)
+    where_sql = " AND ".join(where)
+
+    total_row = db.execute(
+        f"SELECT COUNT(*) AS n FROM calls c JOIN agents a ON a.id = c.agent_id WHERE {where_sql}",
+        tuple(params),
+    ).fetchone()
+    total = total_row["n"] or 0
+
+    # One column per parameter via conditional aggregation (MySQL has no PIVOT).
+    # param_key values come from our own hardcoded PARAMETERS config, not user
+    # input, so interpolating them straight into the SQL text is safe here.
+    pivot_cols = ",\n               ".join(
+        f"MAX(CASE WHEN p.param_key = '{key}' THEN s.score END) AS `{key}`"
+        for key, _ in PARAMETERS
+    )
+
+    rows = db.execute(
+        f"""
+        SELECT c.id AS call_id, a.id AS agent_id, a.name AS agent_name,
+               c.recording_base, c.call_date, c.overall_score, c.verdict, c.overall_quality,
+               {pivot_cols}
+        FROM calls c
+        JOIN agents a ON a.id = c.agent_id
+        LEFT JOIN call_scores s ON s.call_id = c.id
+        LEFT JOIN parameters p ON p.id = s.parameter_id
+        WHERE {where_sql}
+        GROUP BY c.id, a.id, a.name, c.recording_base, c.call_date,
+                 c.overall_score, c.verdict, c.overall_quality
+        ORDER BY {order_sql}
+        LIMIT ? OFFSET ?
+        """,
+        tuple(params) + (page_size, offset),
+    ).fetchall()
+
+    return {
+        "start": start,
+        "end": end,
+        "agent_id": agent_id,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "columns": [{"key": key, "label": label} for key, label in PARAMETERS],
+        "rows": [dict(r) for r in rows],
+    }
 
 # ==================================================================
 # Manifest upload + STT/SLM pipeline
