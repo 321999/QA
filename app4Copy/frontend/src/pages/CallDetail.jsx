@@ -180,7 +180,7 @@ export default function CallDetail({ callId, onBack }) {
 
       <div className="stat-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
         <div className="stat-card accent-ink">
-          <div className="label">Overall score</div>
+          <div className="label">Total score</div>
           <div className="value mono">{call.overall_score ?? "—"}</div>
         </div>
         <div className="stat-card accent-teal">

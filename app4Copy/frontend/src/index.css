@@ -1139,6 +1139,7 @@ a { color: inherit; }
 .report-agent-cell { min-width: 110px; }
 .report-recording-cell { min-width: 220px; color: var(--gray); font-size: 11.5px; }
 .report-score-cell { text-align: center; color: var(--ink-soft); }
+.report-disposition-cell { color: var(--ink-soft); font-size: 12px; }
 
 .report-pagination {
   display: flex;
