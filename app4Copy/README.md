@@ -188,3 +188,53 @@ covers both paths.
 dir /s /b Scripts
 ```
 <p>command to know where is my Scripts folder<span>this i have used to locate my vevn</span></p>
+
+
+
+complete flow should on the bases of audited_at  call 
+disposition wise 
+lead-->interestd
+in same div 
+neutral ka +ve me add 
+audited ke base pe hi rhega poora 
+use the actual name 
+per agent 4-5 calls 
+
+## done 
+* TASK 1 
+
+```
++ve 
+-ve 
+proper
+```
+* TASK 2
+ ```
+disposition wise ui changed
+ ```
+* Task 3
+```
+know interested is the part of LEAD
+```
+* Task 4
+```
+know everything come on the basis of audited_at 
+```
+* Task 5 
+```
+know everything came in single div 
+gap changed
+```
+* Task 6
+```
+manifestd deleted KEEP THE FILE instead 
+```
+
+* Task 7
+```
+audited_at column added in ui of report page 
+```
+
+
+
+

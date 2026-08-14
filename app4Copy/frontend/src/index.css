@@ -785,7 +785,7 @@ a { color: inherit; }
 /*   for the disposition wise */
 .disposition-row {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -1106,7 +1106,7 @@ a { color: inherit; }
 .report-table th, .report-table td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--paper-dim);
-  text-align: left;
+  text-align: center;
 }
 .report-table thead th {
   position: sticky;

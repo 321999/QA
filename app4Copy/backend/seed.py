@@ -37,9 +37,9 @@ def build():
     conn = get_conn()
 
     # wipe any previous demo/real data so this script is safely re-runnable
-    for table in ["fatal_checks", "call_scores", "transcripts", "calls", "manifests", "agents", "users"]:
-        conn.execute(f"DELETE FROM {table}")
-    conn.commit()
+    # for table in ["fatal_checks", "call_scores", "transcripts", "calls", "manifests", "agents", "users"]:
+    #     conn.execute(f"DELETE FROM {table}")
+    # conn.commit()
 
     # users
     conn.execute("INSERT INTO users (username, password_hash, role) VALUES (?,?,?)",

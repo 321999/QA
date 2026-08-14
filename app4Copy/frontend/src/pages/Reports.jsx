@@ -21,15 +21,12 @@ function scoreClass(score) {
   if (score >= 60) return "avg";
   return "poor";
 }
-
-// ✅/❌ badge for the Disposition Status column. null = nothing to compare
-// (call missing either actual or predicted disposition) - shown as a plain
-// dash rather than guessing at correct/incorrect.
+// To print the disposition status in the report table
 function DispositionStatusBadge({ match }) {
   if (match === null || match === undefined) return <span style={{ color: "var(--gray)" }}>—</span>;
   return match
-    ? <span className="score-chip good">✅ Correct</span>
-    : <span className="score-chip poor">❌ Incorrect</span>;
+    ? <span className="score-chip good">Correct</span>
+    : <span className="score-chip poor">Incorrect</span>;
 }
 
 export default function Reports({ start, end, onSelectCall }) {
@@ -115,15 +112,15 @@ export default function Reports({ start, end, onSelectCall }) {
             {DISPOSITION_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
 
-          <select value={actualDisposition} onChange={(e) => updateFilter(setActualDisposition)(e.target.value)} className="report-select">
+          {/* <select value={actualDisposition} onChange={(e) => updateFilter(setActualDisposition)(e.target.value)} className="report-select">
             <option value="">Any actual disposition</option>
             {dispositionOptions.actual.map((v) => <option key={v} value={v}>{v}</option>)}
-          </select>
+          </select> */}
 
-          <select value={predictedDisposition} onChange={(e) => updateFilter(setPredictedDisposition)(e.target.value)} className="report-select">
+          {/* <select value={predictedDisposition} onChange={(e) => updateFilter(setPredictedDisposition)(e.target.value)} className="report-select">
             <option value="">Any predicted disposition</option>
             {dispositionOptions.predicted.map((v) => <option key={v} value={v}>{v}</option>)}
-          </select>
+          </select> */}
 
           <select value={sort} onChange={(e) => updateFilter(setSort)(e.target.value)} className="report-select">
             {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -154,12 +151,15 @@ export default function Reports({ start, end, onSelectCall }) {
                   <th>Actual Disposition</th>
                   <th>Predicted Disposition</th>
                   <th>Disposition Status</th>
+                  <th>Audited at</th>
                   {data?.columns.map((c) => <th key={c.key} title={c.label}>{c.label}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {data?.rows.map((row) => (
+
                   <tr key={row.call_id} onClick={() => onSelectCall(row.call_id)}>
+                                      {console.log("row", row)}
                     <td className="sticky-col report-agent-cell">{row.agent_name}</td>
                     <td className="sticky-col-2 mono report-recording-cell">{row.recording_base || "—"}</td>
                     <td>
@@ -170,6 +170,7 @@ export default function Reports({ start, end, onSelectCall }) {
                     <td className="report-disposition-cell">{row.actual_disposition || "—"}</td>
                     <td className="report-disposition-cell">{row.predicted_disposition || "—"}</td>
                     <td><DispositionStatusBadge match={row.disposition_match} /></td>
+                    <td className="mono report-audited-at-cell">{row.audited_at || "—"}</td>
                     {data.columns.map((c) => (
                       <td key={c.key} className="mono report-score-cell">
                         {row[c.key] ?? "—"}

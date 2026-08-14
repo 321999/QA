@@ -26,12 +26,13 @@ SLM_API_URL = os.environ.get("SLM_API_URL", "http://192.168.11.253:8000/qa")
 
 
 RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", "http://192.168.10.189/qa_upload")
-RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"C:/Users/kishor/Desktop/offline/ybl27rec")
-RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"/home/kishore/ybl27rec")
+# RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"C:/Users/kishor/Desktop/offline/ybl27rec")
+# RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"/home/kishore/ybl27rec") 
+RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"/home/kishore/ai/working/ybl27rec")
 
 
 
-REQUEST_TIMEOUT_SECONDS = int(os.environ.get("PIPELINE_REQUEST_TIMEOUT", "120"))
+REQUEST_TIMEOUT_SECONDS = int(os.environ.get("PIPELINE_REQUEST_TIMEOUT", "3600"))
 
 # Canonical 16-point checklist: SLM response key -> display label shown on the dashboard.
 PARAMETERS = [

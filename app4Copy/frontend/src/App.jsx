@@ -35,7 +35,7 @@ function NavMenu({ username, currentView, onDashboard, onUpload, onReports, onCh
   return (
     <div className="menu-wrap" ref={ref}>
       <button className="menu-btn" type="button" onClick={() => setOpen((v) => !v)}>
-        {/* Menu ▾ */}
+
         <MenuButton/>
       </button>
       {open && (
@@ -60,7 +60,7 @@ function NavMenu({ username, currentView, onDashboard, onUpload, onReports, onCh
             className={currentView === "manifestUpload" ? "active" : ""}
             onClick={() => pick(onUpload)}
           >
-            Upload manifest
+            Upload File
           </button>
           <button type="button" onClick={() => pick(onChangePassword)}>
             Change password
