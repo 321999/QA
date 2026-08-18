@@ -24,7 +24,7 @@ function colorAt(t) {
   return `rgb(${r},${g},${b})`;
 }
 
-const BASE_HEIGHT = 190;
+const BASE_HEIGHT = 230;
 const VIEW_W = 40; // fixed viewBox width - never changes, so the curve math never distorts it was at 56(which is good)
 const VIEW_H = BASE_HEIGHT; // fixed viewBox height - same reason
 

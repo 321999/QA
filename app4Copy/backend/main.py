@@ -1,3 +1,10 @@
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi import Request
+from fastapi.responses import StreamingResponse
+import requests 
+
 import csv
 import io
 import os
@@ -7,7 +14,16 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import pymysql
-from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Request, UploadFile
+# from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -19,7 +35,14 @@ from config import PARAMETERS, RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL
 from db import get_conn, init_db
 from pipeline import process_manifest, save_manifest
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 app = FastAPI(title="Athena QA Dashboard")
+app.mount(
+    "/assets",
+    StaticFiles(directory=FRONTEND_DIST / "assets"),
+    name="assets",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -149,6 +172,37 @@ def date_range_defaults(start: Optional[str], end: Optional[str]):
 # Whitelist of SQL fragments for the 5 clickable dashboard stat cards (feature 2).
 # Kept as a fixed dict (not built from the path param) so there's no injection risk
 # even though it gets interpolated straight into the query string below.
+# CATEGORY_FILTERS = {
+#     "total": "1=1",
+#     "audited": "c.status = 'audited'",
+#     "pending": "c.status IN ('pending','transcribing','analyzing')",
+#     "positive": "c.sentiment = 'positive'",
+#     "negative": "c.sentiment = 'negative'",
+#     # Agent-detail summary cards (feature: clickable Total/Average/Good/Poor).
+#     # "Total Calls" and "Average Call" both draw from the same audited
+#     # population that agent_detail()'s stats are computed over, so they
+#     # share the "audited" filter - only the label shown differs.
+#     "good": "c.overall_quality = 'good'",
+#     "poor": "c.overall_quality = 'poor'",
+#     # Disposition-based (feature: below the funnel). Case-insensitive since
+#     # the manifest's call_end_type_name casing isn't guaranteed consistent
+#     # (we've seen "CALLBACK" in real data).
+#     "disp_not_eligible": "UPPER(c.call_end_type_name) = 'NOT ELIGIBLE'",
+#     "disp_not_interested": "UPPER(c.call_end_type_name) = 'NOT INTERESTED'",
+#     "disp_callback": "UPPER(c.call_end_type_name) = 'CALLBACK'",
+#     "disp_short_hangup": "UPPER(c.call_end_type_name) = 'SHORT HANGUP'",
+#     "disp_lead": """ UPPER(c.call_end_type_name) IN ('LEAD','INTERESTED') """,
+#     # "disp_eligible": "UPPER(c.call_end_type_name) = 'ELIGIBLE'",
+#     "disp_hangup": "UPPER(c.call_end_type_name) = 'HANGUP'",
+#     # Correct/Wrong: actual (manifest) vs predicted (SLM) disposition, compared
+#     # once and cached on the row at process time (pipeline.py) rather than
+#     # here - disposition_match is NULL (excluded from both) for any call
+#     # missing either side of the comparison, so this filter alone is enough,
+#     # no extra "and both sides present" clause needed.
+#     "disp_correct": "c.disposition_match = 1",
+#     "disp_wrong": "c.disposition_match = 0",
+# }
+
 CATEGORY_FILTERS = {
     "total": "1=1",
     "audited": "c.status = 'audited'",
@@ -164,13 +218,13 @@ CATEGORY_FILTERS = {
     # Disposition-based (feature: below the funnel). Case-insensitive since
     # the manifest's call_end_type_name casing isn't guaranteed consistent
     # (we've seen "CALLBACK" in real data).
-    "disp_not_eligible": "UPPER(c.call_end_type_name) = 'NOT ELIGIBLE'",
-    "disp_not_interested": "UPPER(c.call_end_type_name) = 'NOT INTERESTED'",
-    "disp_callback": "UPPER(c.call_end_type_name) = 'CALLBACK'",
-    "disp_short_hangup": "UPPER(c.call_end_type_name) = 'SHORT HANGUP'",
-    "disp_lead": """ UPPER(c.call_end_type_name) IN ('LEAD','INTERESTED') """,
+    "disp_not_eligible": "UPPER(c.predicted_disposition) = 'NOT_ELIGIBLE'",
+    "disp_not_interested": "UPPER(c.predicted_disposition) = 'NOT_INTERESTED'",
+    "disp_callback": "UPPER(c.predicted_disposition) = 'CALLBACK'",
+    "disp_short_hangup": "UPPER(c.predicted_disposition) = 'SHORT_HANGUP'",
+    "disp_lead": """ UPPER(c.predicted_disposition) IN ('LEAD_GENERATED','INTERESTED') """,
     # "disp_eligible": "UPPER(c.call_end_type_name) = 'ELIGIBLE'",
-    "disp_hangup": "UPPER(c.call_end_type_name) = 'HANGUP'",
+    "disp_hangup": "UPPER(c.predicted_disposition) = 'SHORT_HANGUP'",
     # Correct/Wrong: actual (manifest) vs predicted (SLM) disposition, compared
     # once and cached on the row at process time (pipeline.py) rather than
     # here - disposition_match is NULL (excluded from both) for any call
@@ -192,12 +246,12 @@ CATEGORY_FILTERS = {
 # ]
 
 DISPOSITION_CATEGORIES = [
-    ("disp_not_eligible", "Not Eligible", "NOT ELIGIBLE"),
-    ("disp_not_interested", "Not Interested", "NOT INTERESTED"),
+    ("disp_not_eligible", "Not Eligible", "NOT_ELIGIBLE"),
+    ("disp_not_interested", "Not Interested", "NOT_INTERESTED"),
     ("disp_callback", "Callback", "CALLBACK"),
     # ("disp_short_hangup", "Short Hangup", "SHORT HANGUP"),
-    ("disp_short_hangup", "Call disconnected", "SHORT HANGUP"),
-    ("disp_lead", "Lead", "LEAD"),
+    ("disp_short_hangup", "Call disconnected", "SHORT_HANGUP"),
+    ("disp_lead", "Lead", "LEAD_GENERATED"),
     # ("disp_eligible", "Eligible", "ELIGIBLE"),
     # ("disp_interested", "Interested", "INTERESTED"),
 ]
@@ -243,7 +297,8 @@ def dashboard_summary(
         "pending_calls": row["pending_calls"] or 0,
         "positive_calls": row["positive_calls"] or 0,
         "negative_calls": row["negative_calls"] or 0,
-    }
+    } 
+
 
 
 # ---------- Disposition counts (feature: buttons below the funnel) ----------
@@ -260,14 +315,15 @@ def dashboard_dispositions(
     end: Optional[str] = None,
     db = Depends(get_db),
 ):
+    # predicted_disposition call end type ke badle we use predicted bases 
     start, end = date_range_defaults(start, end)
     rows = db.execute(
         """
-        SELECT UPPER(call_end_type_name) AS disp, COUNT(*) AS n
+        SELECT UPPER(predicted_disposition) AS disp, COUNT(*) AS n
         FROM calls
         WHERE audited_at IS NOT NULL AND date(audited_at) BETWEEN date(?) AND date(?)
-          AND call_end_type_name IS NOT NULL AND call_end_type_name != ''
-        GROUP BY UPPER(call_end_type_name)
+          AND predicted_disposition IS NOT NULL AND predicted_disposition != ''
+        GROUP BY UPPER(predicted_disposition)
         """,
         (start, end),
     ).fetchall()
@@ -296,7 +352,7 @@ def dashboard_dispositions(
 
         if cat == "disp_lead":
             count = (
-            counts.get("LEAD", 0)
+            counts.get("LEAD_GENERATED", 0)
             + counts.get("INTERESTED", 0)
         )
         else:
@@ -997,11 +1053,21 @@ def call_detail(call_id: int, db = Depends(get_db)):
     # print(dict(call), [dict(r) for r in scores], [dict(r) for r in fatal])
     call_dict = dict(call)
     print(call_dict)
+    # if call_dict.get("recording_base"):
+    #     call_dict["mono_url"] = f"{RECORDINGS_PLAYBACK_BASE_URL.rstrip('/')}/{call_dict['recording_base']}"
+    # else:
+    #     call_dict["mono_url"] = None
+    # to run the recording 
     if call_dict.get("recording_base"):
-        call_dict["mono_url"] = f"{RECORDINGS_PLAYBACK_BASE_URL.rstrip('/')}/{call_dict['recording_base']}"
+        recording_name = str(call_dict["recording_base"]).strip()
+
+        if not recording_name.lower().endswith(".wav16"):
+            recording_name += ".wav16"
+
+        call_dict["mono_url"] = f"/recordings/{recording_name}"
     else:
         call_dict["mono_url"] = None
-    print(f" after adding the mono url\n{call_dict}")
+        
     return {
         "call": dict(call_dict),
         "parameters": [dict(r) for r in scores],
@@ -1014,6 +1080,73 @@ def health(db = Depends(get_db)):
     not just whether the FastAPI process is up."""
     db.execute("SELECT 1")
     return {"status": "ok"}
+
+
+# from here the recordings will be served 
+@app.get("/recordings/{filename:path}")
+def serve_recording(filename: str, request: Request):
+
+    remote_url = (
+        f"{RECORDINGS_PLAYBACK_BASE_URL.rstrip('/')}/{filename}"
+    )
+
+    print(f"Proxying recording: {remote_url}")
+
+    range_header = request.headers.get("range")
+
+    headers = {}
+
+    if range_header:
+        headers["Range"] = range_header
+
+    try:
+        response = requests.get(
+            remote_url,
+            headers=headers,
+            stream=True,
+            timeout=120,
+        )
+
+        response.raise_for_status()
+
+    except requests.RequestException as e:
+
+        print(f"Recording server error: {e}")
+
+        raise HTTPException(
+            status_code=502,
+            detail=f"Unable to fetch recording: {e}",
+        )
+
+    response_headers = {}
+
+    for header in [
+        "Content-Length",
+        "Content-Range",
+        "Accept-Ranges",
+        "Content-Type",
+    ]:
+        if header in response.headers:
+            response_headers[header] = response.headers[header]
+
+    return StreamingResponse(
+        response.iter_content(chunk_size=1024 * 1024),
+        status_code=response.status_code,
+        headers=response_headers,
+        media_type=response.headers.get(
+            "Content-Type",
+            "audio/wav",
+        ),
+    )
+
+
+# addig the react fallback 
+@app.get("/{full_path:path}")
+async def spa_fallback(full_path: str):
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404)
+
+    return FileResponse(FRONTEND_DIST / "index.html") 
 
 # /////////////////w8/////////////////////////
 # import csv

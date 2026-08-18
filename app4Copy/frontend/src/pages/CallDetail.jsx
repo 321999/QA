@@ -117,29 +117,91 @@ export default function CallDetail({ callId, onBack }) {
   //   target.play().catch((err) => setError(`Couldn't play recording: ${err.message}`));
   //   setNowPlaying({ parameter: paramName, start_time: startTime, end_time: endTime });
   // }
-  function playEvidence(paramName, startTime, endTime) {
+//   function playEvidence(paramName, startTime, endTime) {
+//     {console.log(`playevidenc is ${paramName} ${startTime} ${endTime}`)}
+//   if (startTime === null || startTime === undefined) return;
+//   // gettin the actual start time to run the recording M*60+seconds to get the total in seconds only
+//   startTime=Math.trunc(Math.trunc(startTime)/100)*60 + Math.trunc(startTime)%100
+//   // to end will take the higher value 
+//   endTime=Math.trunc(Math.ceil(endTime)/100)*60+ Math.ceil(endTime)%100
+//   const target = refForLeg[activeLeg]?.current;
+//   if (!target || !activeSrc) {
+//     setError(`No ${activeLeg} recording is available for this call.`);
+//     return;
+//   }
+//   Object.entries(refForLeg).forEach(([leg, ref]) => {
+//     if (leg !== activeLeg && ref.current) ref.current.pause();
+//   });
+//   setError("");
+
+//   function seekAndPlay() {
+//     if (startTime > target.duration) {
+//       setError(`This recording is only ${target.duration.toFixed(1)}s long — can't seek to ${startTime}s. Check the recording matches this call.`);
+//       return;
+//     }
+//     target.currentTime = startTime;
+//     target.play().catch((err) => setError(`Couldn't play recording: ${err.message}`));
+//   }
+
+//   if (target.readyState >= 1) {
+//     seekAndPlay();
+//   } else {
+//     target.addEventListener("loadedmetadata", seekAndPlay, { once: true });
+//   }
+
+//   setNowPlaying({ parameter: paramName, start_time: startTime, end_time: endTime });
+// }
+
+
+function playEvidence(paramName, startTime, endTime) {
+  console.log(
+    `playEvidence: ${paramName}`,
+    `start=${startTime}s`,
+    `end=${endTime}s`
+  );
+
   if (startTime === null || startTime === undefined) return;
-  // gettin the actual start time to run the recording M*60+seconds to get the total in seconds only
-  startTime=Math.trunc(Math.trunc(startTime)/100)*60 + Math.trunc(startTime)%100
-  // to end will take the higher value 
-  endTime=Math.trunc(Math.ceil(endTime)/100)*60+ Math.ceil(endTime)%100
+
   const target = refForLeg[activeLeg]?.current;
+
   if (!target || !activeSrc) {
     setError(`No ${activeLeg} recording is available for this call.`);
     return;
   }
+
+  // Pause any other audio element
   Object.entries(refForLeg).forEach(([leg, ref]) => {
-    if (leg !== activeLeg && ref.current) ref.current.pause();
+    if (leg !== activeLeg && ref.current) {
+      ref.current.pause();
+    }
   });
+
   setError("");
 
   function seekAndPlay() {
-    if (startTime > target.duration) {
-      setError(`This recording is only ${target.duration.toFixed(1)}s long — can't seek to ${startTime}s. Check the recording matches this call.`);
+    console.log(
+      `Seeking audio to ${startTime}s`,
+      `duration=${target.duration}s`
+    );
+
+    if (!Number.isFinite(target.duration)) {
+      setError("Recording duration is not available yet.");
       return;
     }
+
+    if (startTime >= target.duration) {
+      setError(
+        `This recording is only ${target.duration.toFixed(1)}s long — ` +
+        `can't seek to ${startTime.toFixed(2)}s.`
+      );
+      return;
+    }
+
     target.currentTime = startTime;
-    target.play().catch((err) => setError(`Couldn't play recording: ${err.message}`));
+
+    target.play().catch((err) => {
+      setError(`Couldn't play recording: ${err.message}`);
+    });
   }
 
   if (target.readyState >= 1) {
@@ -148,9 +210,15 @@ export default function CallDetail({ callId, onBack }) {
     target.addEventListener("loadedmetadata", seekAndPlay, { once: true });
   }
 
-  setNowPlaying({ parameter: paramName, start_time: startTime, end_time: endTime });
+  // IMPORTANT:
+  // Keep timestamps exactly as returned by the AI.
+  // They are already seconds.
+  setNowPlaying({
+    parameter: paramName,
+    start_time: startTime,
+    end_time: endTime,
+  });
 }
-
   const LEG_OPTIONS = [
     { key: "mono", label: "Full call (mono)", available: Boolean(monoSrc) },
     // { key: "agent", label: "Agent leg (OUT)", available: Boolean(agentSrc) },
@@ -219,11 +287,11 @@ export default function CallDetail({ callId, onBack }) {
           <h3>Disposition check</h3>
           <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center", marginBottom: call.disposition_reason ? 12 : 0 }}>
             <div>
-              <div style={{ fontSize: 11, color: "var(--gray)", textTransform: "uppercase", marginBottom: 4 }}>Actual (manifest)</div>
+              <div style={{ fontSize: 11, color: "var(--gray)", textTransform: "uppercase", marginBottom: 4 }}>Agent Given</div>
               <div style={{ fontSize: 14, fontWeight: 600 }}>{call.call_end_type_name || "—"}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "var(--gray)", textTransform: "uppercase", marginBottom: 4 }}>Predicted (AI)</div>
+              <div style={{ fontSize: 11, color: "var(--gray)", textTransform: "uppercase", marginBottom: 4 }}>Predicted</div>
               <div style={{ fontSize: 14, fontWeight: 600 }}>{call.predicted_disposition || "—"}</div>
             </div>
             <span className={`score-chip ${call.disposition_match ? "good" : "poor"}`}>
@@ -236,7 +304,7 @@ export default function CallDetail({ callId, onBack }) {
                 onClick={() => playEvidence("__disposition__", call.disposition_start_time, call.disposition_end_time)}
                 title={`Play ${fmtTime(call.disposition_start_time)} - ${fmtTime(call.disposition_end_time)}`}
               >
-                {nowPlaying?.parameter === "__disposition__" ? "▶ Playing" : "▶ Listen"}
+                {nowPlaying?.parameter === "__disposition__" ? "▶ Playing" : "▶ Listen"}  
               </button>
             )}
           </div>

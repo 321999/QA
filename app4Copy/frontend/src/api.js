@@ -1,4 +1,7 @@
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:8001";
+// const BASE = import.meta.env.VITE_API_URL || "http://localhost:8001";
+// const BASE = "";
+const BASE = "";
+
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
@@ -73,6 +76,13 @@ export const api = {
     if (search) params.set("search", search);
     return request(`/api/dashboard/top-agents?${params.toString()}`);
   },
+
+  //  //   // change the password 
+  changePassword: (username, currentPassword, newPassword) =>
+  request("/api/change-password", {
+    method: "POST",
+    body: JSON.stringify({ username, current_password: currentPassword, new_password: newPassword }),
+  }),
 
   // manifest upload + STT/SLM pipeline
   uploadManifest: async (file, recordingBaseUrl) => {

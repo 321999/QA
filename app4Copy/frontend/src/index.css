@@ -115,6 +115,7 @@ a { color: inherit; }
   padding: 40px; 
 */
 
+
 .logo-wrapper {
     position: absolute;
     top: 25px;
@@ -146,10 +147,16 @@ a { color: inherit; }
         0 20px 60px rgba(0,0,0,.12);
 
 }
+
 .company-logo {
-    width: 70px;
-    height: auto;
-}
+  display: block;
+  height: 100px;
+  width: auto;
+  margin: 0 auto 20px;
+  border-radius: 8px;
+} 
+
+
 .login-card .brand {
   font-family: var(--font-display);
   font-weight: 700;
