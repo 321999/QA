@@ -42,6 +42,22 @@ a { color: inherit; }
 
 
 /* ---------------- Login ---------------- */
+/* login ke andar if image basically the icon is insered then */
+.login-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.login-logo img {
+  width: 180px;
+  height: auto;
+  max-height: 85px;
+  object-fit: contain;
+  display: block;
+} 
+
 .login-shell {
     min-height: 100vh;
     width: 100%;
@@ -118,9 +134,19 @@ a { color: inherit; }
 
 .logo-wrapper {
     position: absolute;
-    top: 25px;
-    left: 35px;
+    top: 5px;
+    left: 10px;
 }
+ /* .logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  height: 90px;
+  margin: 0 auto 18px;
+  background: transparent;
+  overflow: hidden;
+} */
 .login-panel {
     width: 100%;
 
@@ -155,6 +181,14 @@ a { color: inherit; }
   margin: 0 auto 20px;
   border-radius: 8px;
 } 
+  /* .company-logo {
+  display: block;
+  width: 175px;
+  height: auto;
+  max-height: 85px;
+  object-fit: contain;
+  border-radius: 0;
+} */
 
 
 .login-card .brand {
