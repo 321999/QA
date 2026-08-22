@@ -21,6 +21,7 @@ export default function CallDetail({ callId, onBack }) {
   const [transcript, setTranscript] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [v,setv]=useState(false)
 
   // Which recording the "Listen" buttons control. All three share the same
   // wall-clock timeline (call start = 0s), so a parameter's start_time seeks
@@ -94,6 +95,7 @@ export default function CallDetail({ callId, onBack }) {
   const srcForLeg = { mono: monoSrc, agent: agentSrc, customer: customerSrc };
   const hasAnyAudio = Boolean(monoSrc || agentSrc || customerSrc);
   const activeSrc = srcForLeg[activeLeg];
+  
 
   // Seek the active recording to this parameter's evidence timestamp and
   // play it, pausing the other two so audio never overlaps.
@@ -469,9 +471,9 @@ function playEvidence(paramName, startTime, endTime) {
         </div>
       </div> 
 
-      <div className="section-head" style={{ marginTop: 40 }}><h2>Transcript</h2></div>
+      <div className="section-head" style={{ marginTop: 40 }}><h2 onClick={()=>{setv(!v)}}>Transcript</h2></div>
       {utterances.length > 0 ? (
-        <div className="param-list" style={{ padding: "4px 0" }}>
+        <div className="param-list" style={{ padding: "4px 0",display:v?"none":"block" }}>
           {utterances.map((u, i) => {
             const isHighlighted =
               nowPlaying &&

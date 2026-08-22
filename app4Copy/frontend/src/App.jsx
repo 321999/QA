@@ -122,7 +122,7 @@ function defaultRange() {
   return (
     <div className="app-shell">
       <div className="topbar">
-        <div className="brand"><span className="dot" />Athena QA </div>
+        <div className="brand"><span className="dot" />Athena QA {view.name}</div>
         <div className="topbar-center">
     <DateRangePicker
         start={start}
