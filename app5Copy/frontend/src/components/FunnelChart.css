@@ -1,0 +1,147 @@
+.funnel-container {
+  width: 100%;
+  padding: 24px;
+  background-color: #f8f9fc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.funnel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+
+.funnel-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.funnel-header .subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-left: 12px;
+}
+
+.funnel-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  /* overflow-x: auto;
+   */
+   overflow: visible;
+}
+
+.axis-label {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f172a;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.axis-label.right {
+  transform: rotate(0deg);
+}
+
+.funnel-track {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 20px 0;
+}
+
+.funnel-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  width: 45px;
+}
+
+/* .funnel-label {
+  font-size: 11px;
+  color: #475569;
+  text-align: center;
+  height: 5px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 500;
+}
+*/
+/* .funnel-label.hidden {
+  visibility: hidden;
+}  */
+
+.funnel-segment-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.funnel-3d-svg {
+  width: 100%;
+  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.15));
+  overflow: visible;
+}
+
+.panel-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.panel-pct {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.panel-icon {
+  margin-top: 4px;
+}
+
+/* Tooltip */
+.funnel-tooltip {
+  position: absolute;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  pointer-events: none;
+}
+
+.tt-above {
+  bottom: 100%;
+  margin-bottom: 8px;
+}
+
+.tt-below {
+  top: 100%;
+  margin-top: 8px;
+}
