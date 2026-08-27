@@ -471,9 +471,9 @@ function playEvidence(paramName, startTime, endTime) {
         </div>
       </div> 
 
-      <div className="section-head" style={{ marginTop: 40 }}><h2 onClick={()=>{setv(!v)}}>Transcript</h2></div>
+      <div className="section-head" title="click to see the transcript" style={{ marginTop: 40,cursor:"pointer" }}><h2 onClick={()=>{setv(!v)}}>Transcript</h2></div>
       {utterances.length > 0 ? (
-        <div className="param-list" style={{ padding: "4px 0",display:v?"none":"block" }}>
+        <div className="param-list" style={{ padding: "4px 0",display:v?"block":"none" }}>
           {utterances.map((u, i) => {
             const isHighlighted =
               nowPlaying &&
