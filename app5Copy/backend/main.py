@@ -31,7 +31,7 @@ from pydantic import BaseModel
 import hashlib
 
 # from app4_.backend.config import RECOR, RECORDINGS_PLAYBACK_BASE_URLDINGS_PLAYBACK_BASE_URL
-from config import PARAMETERS, RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL
+from config import PARAMETERS, RECORDINGS_BASE_URL, RECORDINGS_PLAYBACK_BASE_URL, SLM_API_URL
 from db import get_conn, init_db
 from pipeline import process_manifest, save_manifest
 
@@ -1147,6 +1147,34 @@ async def spa_fallback(full_path: str):
         raise HTTPException(status_code=404)
 
     return FileResponse(FRONTEND_DIST / "index.html") 
+
+
+# import requests
+class QARequest(BaseModel):
+    transcript: str
+
+# # for testing the SLM api integration
+@app.post("/test-slm")
+def test_slm(req: QARequest):
+    try:
+        response = requests.post(
+            SLM_API_URL,
+            json={
+                "transcript": req.transcript
+            },
+            timeout=300
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"SLM API Error: {str(e)}"
+        )
+
 
 # /////////////////w8/////////////////////////
 # import csv

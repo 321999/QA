@@ -9,14 +9,14 @@ MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "qa_dashboard3")
 
 # Speech-to-text service: takes rx_path (IN leg) + tx_path (OUT leg) recording URLs,
 # returns a diarized transcript (utterances + full conversation text).
-STT_API_URL = os.environ.get("STT_API_URL", "http://192.168.11.253:9000/transcribe")
+STT_API_URL = os.environ.get("STT_API_URL", "http://192.168.9.253:9000/transcribe")
 RECORDINGS_PLAYBACK_BASE_URL = os.environ.get(
-    "RECORDINGS_PLAYBACK_BASE_URL", "http://192.168.11.253:9000/recordings"
+    "RECORDINGS_PLAYBACK_BASE_URL", "http://192.168.9.253:9000/recordings"
 )
 # http://192.168.11.253:9000/recordings/7002_06397853103_17-Jun-26-19-02-49.wav16
 # SLM QA analysis service: takes the transcript/conversation, returns the 16-point
 # checklist scoring + fatal checks + summary + verdict.
-SLM_API_URL = os.environ.get("SLM_API_URL", "http://192.168.11.253:8000/qa")
+SLM_API_URL = os.environ.get("SLM_API_URL", "http://192.168.9.253:8000/qa")
 
 # If a manifest's "Recordings" cell isn't already a full http URL, it gets built as:
 #   {RECORDINGS_BASE_URL}/{agent_name}/{recording_base}-IN.wav16
@@ -25,14 +25,19 @@ SLM_API_URL = os.environ.get("SLM_API_URL", "http://192.168.11.253:8000/qa")
 # server actually lays out folders.
 
 
-RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", "http://192.168.10.189/qa_upload")
+RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", "http://192.168.9.253/qa_upload")
 # RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"C:/Users/kishor/Desktop/offline/ybl27rec")
 # RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"/home/kishore/ybl27rec") 
 RECORDINGS_BASE_URL = os.environ.get("RECORDINGS_BASE_URL", r"/home/kishore/ai/working/ybl27rec")
 
 
 
-REQUEST_TIMEOUT_SECONDS = int(os.environ.get("PIPELINE_REQUEST_TIMEOUT", "3600"))
+
+
+
+REQUEST_TIMEOUT_SECONDS = int(os.environ.get("PIPELINE_REQUEST_TIMEOUT", "600"))
+SLM_CHAR_LIMIT = int(os.environ.get("SLM_CHAR_LIMIT", "43570"))  # 50k chars per SLM request, else split into chunks
+
 
 # Canonical 16-point checklist: SLM response key -> display label shown on the dashboard.
 PARAMETERS = [

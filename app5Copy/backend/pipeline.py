@@ -229,19 +229,268 @@ def call_stt(rx_path, tx_path):
 #         config.SLM_API_URL,
 #         json={"transcript": conversation_text},
 #         json={"conversation": conversation_text, "utterances": utterances},
-#         timeout=config.REQUEST_TIMEOUT_SECONDS,
-#     )
-#     resp.raise_for_status()
-#     return resp.json()
+#         timeout=config.REQUEST_TIMEOUT_SECONDS, 
+#     ) 
+#     resp.raise_for_status()   
+#     return resp.json() 
 
-def call_slm(conversation_text, utterances):
-    resp = requests.post(
-        config.SLM_API_URL,
-        json={"transcript": conversation_text},
-        timeout=config.REQUEST_TIMEOUT_SECONDS,
-    )
-    resp.raise_for_status()    
-    return resp.json()
+
+
+#  to get the json text 
+# def _dig_for_conversation(obj):
+#     """Recursively find the 'conversation' key, unwrapping stringified JSON."""
+#     if isinstance(obj, str):
+#         try:
+#             obj = json.loads(obj)
+#         except (json.JSONDecodeError, TypeError):
+#             return None
+#     if isinstance(obj, dict):
+#         if "conversation" in obj and isinstance(obj["conversation"], str):
+#             return obj["conversation"]
+#         for v in obj.values():
+#             found = _dig_for_conversation(v)
+#             if found is not None:
+#                 return found
+#     return None 
+
+
+# def convert(raw_text: str) -> str: 
+#     """ 
+#     raw_text: the complete raw text/JSON blob (any nesting level). 
+#     returns: a JSON string like {"transcript": "..."}
+#     """
+#     conversation = _dig_for_conversation(raw_text) 
+#     if conversation is None: 
+#         raise ValueError("Could not find a 'conversation' field in input.") 
+#     return json.dumps({"transcript": conversation.strip()}, ensure_ascii=False, indent=2) 
+
+
+# from 43570 splitting the text into the parts to get the desired result in one form  
+
+#********************** working ******************************************************************
+def call_slm(conversation_text, utterances): 
+    print("length of conversation_text:", len(conversation_text))  # Debugging line
+    print("?"*100)
+    resp = requests.post( 
+        config.SLM_API_URL,  
+        json={"transcript": conversation_text},   
+        timeout=config.REQUEST_TIMEOUT_SECONDS,  
+    ) 
+    print("SLM API response status code:", resp.status_code)  # Debugging line
+    resp.raise_for_status()           
+    return resp.json()  
+
+
+# def call_slm(conversation_text, utterances):
+#     chunks = split_conversation(conversation_text)
+ 
+#     if len(chunks) == 1:
+#         resp = requests.post(
+#             config.SLM_API_URL,
+#             json={"transcript": chunks[0]},
+#             timeout=config.REQUEST_TIMEOUT_SECONDS,
+#         )
+#         print("SLM API response status code:", resp.status_code)
+#         resp.raise_for_status()
+#         return resp.json() 
+ 
+#     # Conversation exceeds the SLM's context limit (config.SLM_CHAR_LIMIT) -
+#     # split into utterance-boundary-safe chunks, score each chunk against
+#     # the SAME rubric independently, then merge into ONE call-level result.
+#     # merge_qa_analyses() below has the actual per-field merge rules - this
+#     # is not "just take the last chunk's answer", each field (parameters,
+#     # fatal_checks, disposition, summary, etc) has its own sensible combine
+#     # logic so the final shape returned here is identical to what a single
+#     # non-chunked call would have produced - nothing downstream (process_call,
+#     # our /api endpoints, the frontend) needs to know chunking happened at all.
+#     print(f"conversation_text is {len(conversation_text)} chars "
+#           f"(> {config.SLM_CHAR_LIMIT} limit) - splitting into {len(chunks)} chunks for SLM")
+ 
+#     chunk_analyses = []
+#     for i, chunk in enumerate(chunks):
+#         resp = requests.post(
+#             config.SLM_API_URL,
+#             json={"transcript": chunk},
+#             timeout=config.REQUEST_TIMEOUT_SECONDS,
+#         )
+#         print(f"SLM API response status code (chunk {i + 1}/{len(chunks)}):", resp.status_code)
+#         resp.raise_for_status()
+#         data = resp.json()
+#         if "error" in data:
+#             raise RuntimeError(f"SLM chunk {i + 1}/{len(chunks)} failed: {data['error']}")
+#         chunk_analyses.append(data.get("analysis", data))
+ 
+#     merged = merge_qa_analyses(chunk_analyses)
+#     return {"analysis": merged}
+ 
+ 
+def split_conversation(conversation_text, max_chars=None):
+    """
+    Splits on utterance-LINE boundaries (never mid-line/mid-sentence), so
+    every chunk stays a coherent, independently-readable slice of the call -
+    cutting mid-utterance would hand the SLM a garbled fragment instead of
+    real dialogue. A single utterance line longer than max_chars on its own
+    is kept whole rather than butchered (extremely rare in practice, and a
+    corrupted single utterance is a smaller problem than a corrupted split).
+    """
+    max_chars = max_chars or config.SLM_CHAR_LIMIT
+    if len(conversation_text) <= max_chars:
+        return [conversation_text]
+ 
+    lines = conversation_text.split("\n")
+    chunks = []
+    current = []
+    current_len = 0
+    for line in lines:
+        line_len = len(line) + 1  # +1 for the "\n" that rejoins it
+        if current and current_len + line_len > max_chars:
+            chunks.append("\n".join(current))
+            current = []
+            current_len = 0
+        current.append(line)
+        current_len += line_len
+    if current:
+        chunks.append("\n".join(current))
+    return chunks
+ 
+ 
+def merge_qa_analyses(chunk_analyses):
+    """
+    Combines N chunk-level QA analyses (each only saw part of the call) into
+    ONE call-level analysis, matching the exact shape process_call() already
+    expects from a single non-chunked SLM response.
+ 
+    Per-field merge rules:
+      - parameters: a checklist item counts as satisfied if it was satisfied
+        in ANY chunk - "greeted professionally" happening once anywhere in
+        the call makes it true for the whole call, regardless of which slice
+        contains that moment. Keeps the evidence/reason/timestamps from
+        whichever chunk actually found it.
+      - total score: recomputed as the sum of the MERGED parameter scores,
+        never trusted from any single chunk (each chunk's own "total" only
+        reflects its own slice).
+      - fatal_checks: a flag raised in ANY chunk surfaces for the whole call -
+        compliance/safety signals, a false negative here is worse than a
+        false positive.
+      - disposition: whole-call outcome judgments usually crystallize near
+        the END of a conversation (closing / final decision), so the LAST
+        chunk with a non-empty disposition type wins; earlier chunks are
+        the fallback only if later ones never actually reached a decision.
+      - summary: concatenated across chunks (each only describes its own
+        slice, none has the full picture alone).
+      - strengths / improvements: unioned + de-duplicated across chunks,
+        capped at 5 each to match the rubric's original expected length.
+      - fatal_error / verdict: recomputed from the merged results (verdict
+        from the merged total score + fatal_error), not copied from any
+        single chunk's own judgment of just its slice.
+    """
+    if len(chunk_analyses) == 1:
+        return chunk_analyses[0]
+ 
+    # ---- parameters ----
+    param_keys = []
+    for a in chunk_analyses:
+        for k in a.get("parameters", {}):
+            if k != "total" and k not in param_keys:
+                param_keys.append(k)
+ 
+    merged_params = {}
+    for key in param_keys:
+        best = None
+        for a in chunk_analyses:
+            entry = a.get("parameters", {}).get(key)
+            if not entry:
+                continue
+            if entry.get("status"):
+                best = entry
+                break
+            if best is None:
+                best = entry
+        merged_params[key] = best or {
+            "status": False, "reason": "No supporting evidence found.",
+            "evidence": "", "start_time": 0, "end_time": 0, "score": 0,
+        }
+ 
+    total_score = sum((merged_params[k].get("score") or 0) for k in param_keys)
+    merged_params["total"] = total_score
+ 
+    # ---- fatal_checks ----
+    fatal_keys = []
+    for a in chunk_analyses:
+        for k in a.get("fatal_checks", {}):
+            if k not in fatal_keys:
+                fatal_keys.append(k)
+ 
+    merged_fatal = {}
+    any_fatal_flag = False
+    for key in fatal_keys:
+        best = None
+        for a in chunk_analyses:
+            entry = a.get("fatal_checks", {}).get(key)
+            if not entry:
+                continue
+            if entry.get("status"):
+                best = entry
+                break
+            if best is None:
+                best = entry
+        merged_fatal[key] = best or {"status": False, "reason": "", "evidence": "", "start_time": 0, "end_time": 0}
+        if merged_fatal[key].get("status"):
+            any_fatal_flag = True
+ 
+    # ---- disposition (last chunk with a real decision wins) ----
+    merged_disposition = {
+        "type": None, "reason": "", "evidence": "", "start_time": None,
+        "end_time": None, "callback_date": "", "callback_time": "",
+    }
+    for a in reversed(chunk_analyses):
+        d = a.get("disposition") or {}
+        if d.get("type"):
+            merged_disposition = d
+            break
+ 
+    # ---- summary / strengths / improvements ----
+    summaries = [a.get("summary", "").strip() for a in chunk_analyses if a.get("summary", "").strip()]
+    merged_summary = " ".join(summaries)
+ 
+    strengths, improvements = [], []
+    for a in chunk_analyses:
+        for s in a.get("strengths", []) or []:
+            if s not in strengths:
+                strengths.append(s)
+        for s in a.get("improvements", []) or []:
+            if s not in improvements:
+                improvements.append(s)
+ 
+    fatal_error = any_fatal_flag or any(a.get("fatal_error") for a in chunk_analyses)
+ 
+    if fatal_error:
+        verdict = "Poor"
+    elif total_score >= 90:
+        verdict = "Excellent"
+    elif total_score >= 75:
+        verdict = "Good"
+    elif total_score >= 60:
+        verdict = "Average"
+    else:
+        verdict = "Poor"
+ 
+    return {
+        "parameters": merged_params,
+        "summary": merged_summary,
+        "fatal_checks": merged_fatal,
+        "disposition": merged_disposition,
+        "strengths": strengths[:5],
+        "improvements": improvements[:5],
+        "fatal_error": fatal_error,
+        "verdict": verdict,
+        "total": total_score,
+    }
+ 
+
+
+
+
 
 
 def normalize_score(param_key, raw_score):
@@ -374,24 +623,30 @@ def process_call(conn, call_row):
     conn.commit()
     try:
         stt_result = call_stt(call_row["rx_path"], call_row["tx_path"])
+        # print(stt_result[""])
+        if len(stt_result)>0:
+            print("stt is correct and working----"*10)
     except Exception as e:
         conn.execute(
             "UPDATE calls SET status='failed', error_message=? WHERE id=?",
             (f"STT request failed: {e}", call_id),
         )
-        return False
+        return False 
 
     conversation_text = stt_result.get("conversation", "")
     utterances = stt_result.get("utterances", [])
+    # print("conversation_text:\n\n", conversation_text)
+    # print("utterances:\n\n", utterances)
     conn.execute(
         "INSERT INTO transcripts (call_id, conversation_text, utterances_json, raw_json) VALUES (?,?,?,?)",
         (call_id, conversation_text, json.dumps(utterances), json.dumps(stt_result)),
     )
-
+    # print(f"transcript insertred into call id --.{call_id}--"*10)
     # 2. SLM QA analysis
     conn.execute("UPDATE calls SET status='analyzing' WHERE id=?", (call_id,))
     conn.commit()
     try:
+        print("calling slm "*10)
         slm_result = call_slm(conversation_text, utterances)
     except Exception as e:
         conn.execute(
