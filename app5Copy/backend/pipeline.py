@@ -268,60 +268,60 @@ def call_stt(rx_path, tx_path):
 # from 43570 splitting the text into the parts to get the desired result in one form  
 
 #********************** working ******************************************************************
-def call_slm(conversation_text, utterances): 
-    print("length of conversation_text:", len(conversation_text))  # Debugging line
-    print("?"*100)
-    resp = requests.post( 
-        config.SLM_API_URL,  
-        json={"transcript": conversation_text},   
-        timeout=config.REQUEST_TIMEOUT_SECONDS,  
-    ) 
-    print("SLM API response status code:", resp.status_code)  # Debugging line
-    resp.raise_for_status()           
-    return resp.json()  
+# def call_slm(conversation_text, utterances): 
+#     print("length of conversation_text:", len(conversation_text))  # Debugging line 
+#     print("?"*100) 
+#     resp = requests.post(  
+#         config.SLM_API_URL,   
+#         json={"transcript": conversation_text},    
+#         timeout=config.REQUEST_TIMEOUT_SECONDS,  
+#     ) 
+#     print("SLM API response status code:", resp.status_code)  # Debugging line  
+#     resp.raise_for_status()             
+#     return resp.json()  
 
 
-# def call_slm(conversation_text, utterances):
-#     chunks = split_conversation(conversation_text)
+def call_slm(conversation_text, utterances):
+    chunks = split_conversation(conversation_text)
  
-#     if len(chunks) == 1:
-#         resp = requests.post(
-#             config.SLM_API_URL,
-#             json={"transcript": chunks[0]},
-#             timeout=config.REQUEST_TIMEOUT_SECONDS,
-#         )
-#         print("SLM API response status code:", resp.status_code)
-#         resp.raise_for_status()
-#         return resp.json() 
+    if len(chunks) == 1:
+        resp = requests.post(
+            config.SLM_API_URL,
+            json={"transcript": chunks[0]},
+            timeout=config.REQUEST_TIMEOUT_SECONDS,
+        )
+        print("SLM API response status code:", resp.status_code)
+        resp.raise_for_status()
+        return resp.json() 
  
-#     # Conversation exceeds the SLM's context limit (config.SLM_CHAR_LIMIT) -
-#     # split into utterance-boundary-safe chunks, score each chunk against
-#     # the SAME rubric independently, then merge into ONE call-level result.
-#     # merge_qa_analyses() below has the actual per-field merge rules - this
-#     # is not "just take the last chunk's answer", each field (parameters,
-#     # fatal_checks, disposition, summary, etc) has its own sensible combine
-#     # logic so the final shape returned here is identical to what a single
-#     # non-chunked call would have produced - nothing downstream (process_call,
-#     # our /api endpoints, the frontend) needs to know chunking happened at all.
-#     print(f"conversation_text is {len(conversation_text)} chars "
-#           f"(> {config.SLM_CHAR_LIMIT} limit) - splitting into {len(chunks)} chunks for SLM")
+    # Conversation exceeds the SLM's context limit (config.SLM_CHAR_LIMIT) -
+    # split into utterance-boundary-safe chunks, score each chunk against
+    # the SAME rubric independently, then merge into ONE call-level result.
+    # merge_qa_analyses() below has the actual per-field merge rules - this
+    # is not "just take the last chunk's answer", each field (parameters,
+    # fatal_checks, disposition, summary, etc) has its own sensible combine
+    # logic so the final shape returned here is identical to what a single
+    # non-chunked call would have produced - nothing downstream (process_call,
+    # our /api endpoints, the frontend) needs to know chunking happened at all.
+    print(f"conversation_text is {len(conversation_text)} chars "
+          f"(> {config.SLM_CHAR_LIMIT} limit) - splitting into {len(chunks)} chunks for SLM")
  
-#     chunk_analyses = []
-#     for i, chunk in enumerate(chunks):
-#         resp = requests.post(
-#             config.SLM_API_URL,
-#             json={"transcript": chunk},
-#             timeout=config.REQUEST_TIMEOUT_SECONDS,
-#         )
-#         print(f"SLM API response status code (chunk {i + 1}/{len(chunks)}):", resp.status_code)
-#         resp.raise_for_status()
-#         data = resp.json()
-#         if "error" in data:
-#             raise RuntimeError(f"SLM chunk {i + 1}/{len(chunks)} failed: {data['error']}")
-#         chunk_analyses.append(data.get("analysis", data))
+    chunk_analyses = []
+    for i, chunk in enumerate(chunks):
+        resp = requests.post(
+            config.SLM_API_URL,
+            json={"transcript": chunk},
+            timeout=config.REQUEST_TIMEOUT_SECONDS,
+        )
+        print(f"SLM API response status code (chunk {i + 1}/{len(chunks)}):", resp.status_code)
+        resp.raise_for_status()
+        data = resp.json()
+        if "error" in data:
+            raise RuntimeError(f"SLM chunk {i + 1}/{len(chunks)} failed: {data['error']}")
+        chunk_analyses.append(data.get("analysis", data))
  
-#     merged = merge_qa_analyses(chunk_analyses)
-#     return {"analysis": merged}
+    merged = merge_qa_analyses(chunk_analyses)
+    return {"analysis": merged}
  
  
 def split_conversation(conversation_text, max_chars=None):
@@ -702,6 +702,9 @@ def process_call(conn, call_row):
 
     # overall_score = round(sum(scores) / len(scores), 1) if scores else (total or 0)
     overall_score = sum(scores) if scores else (total or 0)# just sum up the scores 
+    # updated with if the fatal error is present in the call thenthe overalll score should become 0  
+    if fatal_error:
+        overall_score = 0
 
     overall_quality = quality_from_score(overall_score, fatal_error)
     sentiment = sentiment_from_verdict(verdict, fatal_error)
